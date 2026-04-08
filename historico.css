@@ -1,0 +1,301 @@
+/* =============================================
+   Histórico de Relatórios — historico.css
+   ============================================= */
+
+/* ---- Filtros ---- */
+.filtros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  animation: fadeUp 0.4s ease both;
+}
+
+.filtro-btn {
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.filtro-btn:hover {
+  border-color: var(--border-gold);
+  color: var(--gold);
+}
+
+.filtro-btn.ativo {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.busca { margin-left: auto; }
+
+.busca input {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  width: 200px;
+  transition: border-color 0.2s;
+}
+
+.busca input:focus { border-color: var(--gold-dim); }
+.busca input::placeholder { color: var(--text-dim); }
+
+/* ---- Botão novo relatório ---- */
+.btn-novo {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: 3px;
+  padding: 9px 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-novo:hover { background: var(--gold-light); }
+
+/* ---- Lista de relatórios ---- */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.card {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: 5px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.card:hover {
+  border-color: var(--border-gold);
+  transform: translateX(3px);
+}
+
+.card-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(201, 168, 76, 0.1);
+  border: 0.5px solid var(--border-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.card-info { flex: 1; }
+
+.card-info-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.card-nome { font-size: 14px; font-weight: 500; color: var(--text); }
+
+.card-cargo {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: rgba(201, 168, 76, 0.08);
+  color: var(--gold-dim);
+  border: 0.5px solid var(--border-gold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badge-sub {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold);
+  border: 0.5px solid var(--border-gold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.card-periodo { font-size: 12px; color: var(--text-muted); }
+
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.card-tarefas { font-size: 11px; color: var(--gold-dim); }
+.card-arrow { font-size: 16px; color: var(--text-dim); margin-left: 4px; }
+
+/* ---- Empty / Loading state ---- */
+.empty, .loading {
+  text-align: center;
+  padding: 3rem 0;
+  color: var(--text-dim);
+  animation: fadeUp 0.4s ease both;
+  font-size: 14px;
+}
+
+.empty-icon { font-size: 28px; color: var(--border); margin-bottom: 8px; }
+
+/* ---- Modal ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 1.5rem;
+  animation: fadeUp 0.2s ease;
+}
+
+.modal-box {
+  background: #111;
+  border: 0.5px solid var(--border-gold);
+  border-radius: 6px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.modal-title {
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.modal-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn-txt {
+  background: transparent;
+  border: 0.5px solid var(--border-gold);
+  border-radius: 3px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-txt:hover { background: rgba(201, 168, 76, 0.08); }
+
+.btn-del {
+  background: transparent;
+  border: 0.5px solid rgba(226, 75, 74, 0.3);
+  border-radius: 3px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: #E24B4A;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-del:hover { background: rgba(226, 75, 74, 0.08); }
+
+.btn-x {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.btn-x:hover { color: var(--text); }
+
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+.modal-section { margin-bottom: 1.25rem; }
+
+.modal-section-title {
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.modal-field { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+.modal-field span {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tarefa-item {
+  background: #1a1a1a;
+  border-radius: 3px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text);
+  border-left: 2px solid var(--gold-dim);
+}
+
+.tarefa-item.pendente { border-left-color: var(--text-dim); }
+
+.tarefa-prog { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.copied-tip { font-size: 11px; color: var(--gold); opacity: 0; transition: opacity 0.3s; }

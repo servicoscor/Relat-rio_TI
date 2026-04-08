@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histórico de Relatórios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="historico.css" />
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="header">
+      <div class="header-left">
+        <h1><span class="gold-dot"></span>Histórico de Relatórios</h1>
+        <p>Todos os relatórios enviados</p>
+      </div>
+      <a href="index.html" class="btn-novo">+ Novo Relatório</a>
+    </div>
+
+    <div class="filtros">
+      <button class="filtro-btn ativo" onclick="filtrar('todos', this)">Todos</button>
+      <button class="filtro-btn" onclick="filtrar('coord01', this)">Coordenador 01</button>
+      <button class="filtro-btn" onclick="filtrar('coord02', this)">Coordenador 02</button>
+      <button class="filtro-btn" onclick="filtrar('substituto', this)">Substitutos</button>
+      <div class="busca">
+        <input type="text" id="busca" placeholder="Buscar por nome..." oninput="buscar()" />
+      </div>
+    </div>
+
+    <div class="lista" id="lista">
+      <div class="loading">Carregando relatórios...</div>
+    </div>
+  </div>
+
+  <!-- Modal de detalhes -->
+  <div class="modal-overlay" id="modal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-top">
+        <span class="modal-title">Detalhes do Relatório</span>
+        <div class="modal-actions">
+          <span class="copied-tip" id="copied-tip">Copiado!</span>
+          <button class="btn-txt" onclick="copiarModal()">Copiar texto</button>
+          <button class="btn-del" onclick="excluir()">Excluir</button>
+          <button class="btn-x" onclick="fecharModal()">×</button>
+        </div>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="historico.js"></script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório de Atividades</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="wrap" id="form-wrap">
+    <div class="header">
+      <div class="header-left">
+        <h1><span class="gold-dot"></span>Relatório de Atividades</h1>
+        <p>Preencha todos os campos e submeta ao superior</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <a href="historico.html" class="btn-historico">☰ Ver Histórico</a>
+        <div class="stamp" id="stamp-data"></div>
+      </div>
+    </div>
+
+    <!-- Responsável -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-label-text">Responsável</span>
+        <span class="section-label-line"></span>
+      </div>
+      <div class="row two">
+        <div class="field">
+          <label>Nome completo</label>
+          <input type="text" id="nome" placeholder="Ex: João Silva" />
+        </div>
+        <div class="field">
+          <label>Cargo</label>
+          <select id="cargo" onchange="verificarSubstituto()">
+            <option value="" disabled selected>Selecione o cargo</option>
+            <option value="Coordenador 01">Coordenador 01</option>
+            <option value="Coordenador 02">Coordenador 02</option>
+          </select>
+        </div>
+      </div>
+      <!-- Bloco substituto -->
+      <div class="substituto-wrap" id="substituto-wrap">
+        <div class="substituto-card">
+          <div class="substituto-icon">02</div>
+          <div class="substituto-info">
+            <p>Substituindo Coordenador 01</p>
+            <span>O Coordenador 02 está cobrindo a ausência do titular neste período</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Período -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-label-text">Período</span>
+        <span class="section-label-line"></span>
+      </div>
+      <div class="row two">
+        <div class="field">
+          <label>Data inicial</label>
+          <input type="date" id="dt-inicio" />
+        </div>
+        <div class="field">
+          <label>Data final</label>
+          <input type="date" id="dt-fim" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarefas em Andamento -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-label-text">Tarefas em Andamento</span>
+        <span class="section-label-line"></span>
+      </div>
+      <div id="lista-andamento"></div>
+      <button class="btn-add" onclick="addTarefa('andamento')">+ Adicionar tarefa em andamento</button>
+    </div>
+
+    <!-- Tarefas Pendentes -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-label-text">Tarefas Pendentes</span>
+        <span class="section-label-line"></span>
+      </div>
+      <div id="lista-pendente"></div>
+      <button class="btn-add" onclick="addTarefa('pendente')">+ Adicionar tarefa pendente</button>
+    </div>
+
+    <!-- Observações -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-label-text">Observações</span>
+        <span class="section-label-line"></span>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Pontos de atenção</label>
+        <textarea id="atencao" placeholder="Riscos, bloqueios ou dependências..."></textarea>
+      </div>
+      <div class="row two">
+        <div class="field">
+          <label>Próximos passos</label>
+          <textarea id="prox" placeholder="O que está planejado para o próximo período?"></textarea>
+        </div>
+        <div class="field">
+          <label>Observações gerais</label>
+          <textarea id="obs" placeholder="Informações adicionais relevantes..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span class="footer-note">Todos os campos marcados são obrigatórios</span>
+      <button class="btn-submit" onclick="enviar()">Enviar Relatório</button>
+    </div>
+  </div>
+
+  <!-- Modal de Prévia -->
+  <div class="preview-overlay" id="preview" style="display:none">
+    <div class="preview-box">
+      <div class="preview-topbar">
+        <span class="preview-title">Prévia do Relatório</span>
+        <div class="preview-actions">
+          <span class="copied-tip" id="copied-tip">Copiado!</span>
+          <button class="btn-copy" onclick="copiar()">Copiar texto</button>
+          <button class="btn-close" onclick="fechar()">×</button>
+        </div>
+      </div>
+      <div class="preview-content">
+        <div class="preview-text" id="preview-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
