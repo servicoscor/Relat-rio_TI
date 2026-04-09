@@ -1,61 +1,47 @@
-# Relatório de Atividades
+# Relatorio de Atividades
 
-Projeto completo com frontend e backend para preenchimento e envio de relatórios de atividades.
+Sistema web para preenchimento, envio e consulta de relatorios de atividades.
 
-## Estrutura
+## Como funciona agora
 
-```
-projeto-relatorio/
-├── index.html   → Página principal (formulário)
-├── style.css    → Estilo visual
-├── app.js       → Lógica do frontend
-├── server.js    → Servidor Node.js (backend)
-└── README.md
-```
+O projeto nao depende mais de PostgreSQL.
+Os dados ficam salvos localmente em `data/store.json`.
 
 ## Como rodar
 
-### Backend
+```bash
+npm install
+npm start
+```
+
+Servidor: `http://localhost:3000`
+
+Frontend: abra `login.html` no navegador ou use Live Server no VS Code.
+
+## Usuarios padrao
+
+- `admin` / `admin123`
+- `coord01` / `coord123`
+- `coord02` / `coord123`
+
+Os usuarios sao criados automaticamente no primeiro `npm start`.
+
+## Seed manual
+
+Se quiser recriar apenas os usuarios padrao:
 
 ```bash
-npm init -y
-npm install express cors
-node server.js
+npm run seed
 ```
 
-O servidor sobe em: http://localhost:3000
+## Rotas principais
 
-### Frontend
+- `POST /login`
+- `POST /relatorio`
+- `GET /relatorios`
+- `GET /relatorio/:id`
+- `DELETE /relatorio/:id`
 
-Abra o `index.html` diretamente no navegador, ou use a extensão **Live Server** no VS Code.
+## Observacao
 
----
-
-## Rotas da API
-
-| Método | Rota            | Descrição                    |
-|--------|-----------------|------------------------------|
-| POST   | /relatorio      | Envia um novo relatório      |
-| GET    | /relatorios     | Lista todos os relatórios    |
-| GET    | /relatorio/:id  | Busca relatório por ID       |
-
----
-
-## Exemplo de payload (POST /relatorio)
-
-```json
-{
-  "responsavel": "João Silva",
-  "cargo": "Coordenador 01",
-  "periodo": { "inicio": "2026-04-01", "fim": "2026-04-06" },
-  "tarefasAndamento": [
-    { "descricao": "Verificações de rotina", "responsavelDireto": "João", "previsao": "2026-04-10", "progresso": "Em andamento" }
-  ],
-  "tarefasPendentes": [
-    { "descricao": "Enviar relatório mensal", "responsavelDireto": "Maria", "previsao": "2026-04-15", "progresso": "Não iniciado" }
-  ],
-  "pontosAtencao": "1054 câmeras indisponíveis.",
-  "observacoes": "Sem intercorrências.",
-  "proximosPassos": "Acompanhar entrega das tarefas pendentes."
-}
-```
+O arquivo `banco.sql` ficou no projeto apenas como legado e nao e mais usado pela aplicacao atual.

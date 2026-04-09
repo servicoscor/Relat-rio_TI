@@ -1,0 +1,157 @@
+/* =============================================
+   Login — login.css
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8D08A;
+  --gold-dim: #8A6E2F;
+  --ink: #0D0D0D;
+  --surface2: #1E1E1E;
+  --border: #2E2E2E;
+  --border-gold: rgba(201, 168, 76, 0.3);
+  --text: #F0EDE6;
+  --text-muted: #888;
+  --text-dim: #555;
+}
+
+body {
+  background: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface2);
+  border: 0.5px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+  animation: fadeUp 0.5s ease both;
+}
+
+/* ---- Logo ---- */
+.logo { text-align: center; margin-bottom: 2rem; }
+
+.logo h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.logo p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gold-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.logo-line {
+  width: 40px;
+  height: 0.5px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  margin: 12px auto 0;
+}
+
+/* ---- Campos ---- */
+.field { margin-bottom: 14px; }
+
+.field label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  background: #141414;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 11px 13px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input:focus {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.07);
+}
+
+.field input::placeholder { color: var(--text-dim); }
+
+/* ---- Erro ---- */
+.erro {
+  background: rgba(226, 75, 74, 0.08);
+  border: 0.5px solid rgba(226, 75, 74, 0.3);
+  border-radius: 4px;
+  padding: 10px 13px;
+  font-size: 12px;
+  color: #E24B4A;
+  margin-bottom: 14px;
+  display: none;
+}
+
+/* ---- Botão ---- */
+.btn-login {
+  width: 100%;
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  margin-top: 6px;
+}
+
+.btn-login:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-login:active { transform: translateY(0); }
+
+/* ---- Animações ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-6px); }
+  75%       { transform: translateX(6px); }
+}

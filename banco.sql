@@ -43,3 +43,20 @@ CREATE INDEX idx_relatorios_criado_em ON relatorios(criado_em DESC);
 CREATE INDEX idx_relatorios_cargo     ON relatorios(cargo);
 CREATE INDEX idx_tarefas_relatorio    ON tarefas(relatorio_id);
 CREATE INDEX idx_tarefas_tipo         ON tarefas(tipo);
+
+-- -----------------------------------------------
+-- Tabela de usuários (login)
+-- -----------------------------------------------
+CREATE TABLE usuarios (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usuario    VARCHAR(60) UNIQUE NOT NULL,
+  senha_hash VARCHAR(255) NOT NULL,
+  nome       VARCHAR(120) NOT NULL,
+  nivel      VARCHAR(20) NOT NULL CHECK (nivel IN ('admin', 'coordenador')),
+  cargo      VARCHAR(80),
+  ativo      BOOLEAN NOT NULL DEFAULT TRUE,
+  criado_em  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Usuários iniciais (senhas em texto — rodar seed.js para gerar hashes)
+-- admin: admin123 | coord01: coord123 | coord02: coord123

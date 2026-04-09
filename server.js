@@ -1,39 +1,114 @@
 // =============================================
-//   Relatório de Atividades — server.js
-//   Banco de dados: PostgreSQL
+//   Relatorio de Atividades - server.js
+//   Persistencia local em arquivo JSON
 // =============================================
 
 require("dotenv").config();
+
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
-const { Pool } = require("pg");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { randomUUID } = require("crypto");
+
+const {
+  getStorePath,
+  readStore,
+  seedUsuariosPadrao,
+  mutateStore,
+} = require("./storage");
 
 const app = express();
+const JWT_SECRET = process.env.JWT_SECRET || "relatorio_secret_2026";
+const PUBLIC_DIR = __dirname;
+
 app.use(cors());
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "login.html"));
+});
+app.use(express.static(PUBLIC_DIR, { index: false }));
 
-// -----------------------------------------------
-// Conexão com o PostgreSQL
-// -----------------------------------------------
-const pool = new Pool({
-  host:     process.env.DB_HOST     || "localhost",
-  port:     process.env.DB_PORT     || 5432,
-  database: process.env.DB_NAME     || "relatorios_db",
-  user:     process.env.DB_USER     || "postgres",
-  password: process.env.DB_PASSWORD || "",
+function autenticar(req, res, next) {
+  const auth = req.headers.authorization;
+
+  if (!auth || !auth.startsWith("Bearer ")) {
+    return res.status(401).json({ erro: "Nao autorizado." });
+  }
+
+  try {
+    req.usuario = jwt.verify(auth.split(" ")[1], JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ erro: "Token invalido ou expirado." });
+  }
+}
+
+function apenasAdmin(req, res, next) {
+  if (req.usuario?.nivel !== "admin") {
+    return res.status(403).json({ erro: "Acesso restrito ao administrador." });
+  }
+
+  next();
+}
+
+function apenasCoordenador(req, res, next) {
+  if (req.usuario?.nivel !== "coordenador") {
+    return res.status(403).json({ erro: "Acesso restrito ao coordenador." });
+  }
+
+  next();
+}
+
+app.post("/login", async (req, res) => {
+  const { usuario, senha } = req.body;
+
+  if (!usuario || !senha) {
+    return res.status(400).json({ erro: "Usuario e senha sao obrigatorios." });
+  }
+
+  try {
+    const store = await readStore();
+    const usuarioDb = store.usuarios.find(
+      (item) => item.usuario === usuario && item.ativo !== false
+    );
+
+    if (!usuarioDb) {
+      return res.status(401).json({ erro: "Usuario ou senha incorretos." });
+    }
+
+    const senhaCorreta = await bcrypt.compare(senha, usuarioDb.senha_hash);
+
+    if (!senhaCorreta) {
+      return res.status(401).json({ erro: "Usuario ou senha incorretos." });
+    }
+
+    const token = jwt.sign(
+      {
+        id: usuarioDb.id,
+        usuario: usuarioDb.usuario,
+        nivel: usuarioDb.nivel,
+        nome: usuarioDb.nome,
+        cargo: usuarioDb.cargo,
+      },
+      JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+
+    return res.json({
+      token,
+      nivel: usuarioDb.nivel,
+      nome: usuarioDb.nome,
+      cargo: usuarioDb.cargo,
+    });
+  } catch (err) {
+    console.error("Erro no login:", err.message);
+    return res.status(500).json({ erro: "Erro interno." });
+  }
 });
 
-pool.connect()
-  .then(() => console.log("Conectado ao PostgreSQL"))
-  .catch((err) => {
-    console.error("Erro ao conectar ao banco:", err.message);
-    process.exit(1);
-  });
-
-// -----------------------------------------------
-// POST /relatorio — Salva novo relatório + tarefas
-// -----------------------------------------------
-app.post("/relatorio", async (req, res) => {
+app.post("/relatorio", autenticar, async (req, res) => {
   const {
     responsavel,
     cargo,
@@ -46,137 +121,161 @@ app.post("/relatorio", async (req, res) => {
     pontosAtencao,
   } = req.body;
 
-  if (!responsavel) {
-    return res.status(400).json({ erro: "Campo obrigatório: responsavel." });
+  const ehAdmin = req.usuario?.nivel === "admin";
+  const responsavelFinal = ehAdmin ? responsavel || req.usuario?.nome : req.usuario?.nome;
+  const cargoFinal = ehAdmin ? cargo || req.usuario?.cargo || null : req.usuario?.cargo || null;
+  const substitutoFinal = ehAdmin ? Boolean(substituto) : cargoFinal === "Coordenador 02";
+
+  if (!responsavelFinal) {
+    return res.status(400).json({ erro: "Campo obrigatorio: responsavel." });
   }
 
-  const client = await pool.connect();
-
   try {
-    await client.query("BEGIN");
+    const relatorioId = randomUUID();
+    const criadoEm = new Date().toISOString();
+    const tarefas = [
+      ...(tarefasAndamento || []).map((tarefa) => ({
+        id: randomUUID(),
+        relatorio_id: relatorioId,
+        tipo: "andamento",
+        descricao: tarefa.descricao,
+        responsavel_direto: tarefa.responsavelDireto || null,
+        previsao: tarefa.previsao || null,
+        progresso: tarefa.progresso || null,
+        criado_em: new Date().toISOString(),
+      })),
+      ...(tarefasPendentes || []).map((tarefa) => ({
+        id: randomUUID(),
+        relatorio_id: relatorioId,
+        tipo: "pendente",
+        descricao: tarefa.descricao,
+        responsavel_direto: tarefa.responsavelDireto || null,
+        previsao: tarefa.previsao || null,
+        progresso: tarefa.progresso || null,
+        criado_em: new Date().toISOString(),
+      })),
+    ];
 
-    // Insere o relatório
-    const { rows } = await client.query(
-      `INSERT INTO relatorios
-        (responsavel, cargo, substituto, data_inicio, data_fim, pontos_atencao, observacoes, proximos_passos)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, criado_em`,
-      [
-        responsavel,
-        cargo || null,
-        substituto || false,
-        periodo?.inicio || null,
-        periodo?.fim || null,
-        pontosAtencao || null,
-        observacoes || null,
-        proximosPassos || null,
-      ]
-    );
+    await mutateStore(async (store) => {
+      store.relatorios.push({
+        id: relatorioId,
+        criado_em: criadoEm,
+        responsavel: responsavelFinal,
+        cargo: cargoFinal,
+        substituto: substitutoFinal,
+        data_inicio: periodo?.inicio || null,
+        data_fim: periodo?.fim || null,
+        pontos_atencao: pontosAtencao || null,
+        observacoes: observacoes || null,
+        proximos_passos: proximosPassos || null,
+        tarefas,
+      });
+    });
 
-    const relatorioId = rows[0].id;
-
-    // Insere tarefas em andamento
-    for (const t of tarefasAndamento || []) {
-      await client.query(
-        `INSERT INTO tarefas (relatorio_id, tipo, descricao, responsavel_direto, previsao, progresso)
-         VALUES ($1, 'andamento', $2, $3, $4, $5)`,
-        [relatorioId, t.descricao, t.responsavelDireto || null, t.previsao || null, t.progresso || null]
-      );
-    }
-
-    // Insere tarefas pendentes
-    for (const t of tarefasPendentes || []) {
-      await client.query(
-        `INSERT INTO tarefas (relatorio_id, tipo, descricao, responsavel_direto, previsao, progresso)
-         VALUES ($1, 'pendente', $2, $3, $4, $5)`,
-        [relatorioId, t.descricao, t.responsavelDireto || null, t.previsao || null, t.progresso || null]
-      );
-    }
-
-    await client.query("COMMIT");
-
-    console.log(`[+] Relatório salvo — ID: ${relatorioId} — ${responsavel} (${cargo})`);
-    return res.status(201).json({ mensagem: "Relatório salvo com sucesso.", id: relatorioId, criado_em: rows[0].criado_em });
-
-  } catch (err) {
-    await client.query("ROLLBACK");
-    console.error("Erro ao salvar relatório:", err.message);
-    return res.status(500).json({ erro: "Erro interno ao salvar o relatório." });
-  } finally {
-    client.release();
-  }
-});
-
-// -----------------------------------------------
-// GET /relatorios — Lista todos os relatórios
-// -----------------------------------------------
-app.get("/relatorios", async (req, res) => {
-  try {
-    const { rows } = await pool.query(
-      `SELECT id, criado_em, responsavel, cargo, substituto, data_inicio, data_fim
-       FROM relatorios
-       ORDER BY criado_em DESC`
-    );
-    return res.json(rows);
-  } catch (err) {
-    console.error("Erro ao listar relatórios:", err.message);
-    return res.status(500).json({ erro: "Erro ao buscar relatórios." });
-  }
-});
-
-// -----------------------------------------------
-// GET /relatorio/:id — Busca relatório completo com tarefas
-// -----------------------------------------------
-app.get("/relatorio/:id", async (req, res) => {
-  try {
-    const { rows: rel } = await pool.query(
-      `SELECT * FROM relatorios WHERE id = $1`,
-      [req.params.id]
-    );
-
-    if (rel.length === 0) {
-      return res.status(404).json({ erro: "Relatório não encontrado." });
-    }
-
-    const { rows: tarefas } = await pool.query(
-      `SELECT * FROM tarefas WHERE relatorio_id = $1 ORDER BY criado_em ASC`,
-      [req.params.id]
-    );
-
-    return res.json({
-      ...rel[0],
-      tarefasAndamento: tarefas.filter((t) => t.tipo === "andamento"),
-      tarefasPendentes: tarefas.filter((t) => t.tipo === "pendente"),
+    console.log(`[+] Relatorio salvo - ID: ${relatorioId} - ${responsavelFinal} (${cargoFinal || "-"})`);
+    return res.status(201).json({
+      mensagem: "Relatorio salvo com sucesso.",
+      id: relatorioId,
+      criado_em: criadoEm,
     });
   } catch (err) {
-    console.error("Erro ao buscar relatório:", err.message);
-    return res.status(500).json({ erro: "Erro ao buscar relatório." });
+    console.error("Erro ao salvar relatorio:", err.message);
+    return res.status(500).json({ erro: "Erro interno ao salvar o relatorio." });
   }
 });
 
-// -----------------------------------------------
-// DELETE /relatorio/:id — Remove um relatório
-// -----------------------------------------------
-app.delete("/relatorio/:id", async (req, res) => {
+app.get("/relatorios", autenticar, apenasCoordenador, async (req, res) => {
   try {
-    const { rowCount } = await pool.query(
-      `DELETE FROM relatorios WHERE id = $1`,
-      [req.params.id]
-    );
-    if (rowCount === 0) {
-      return res.status(404).json({ erro: "Relatório não encontrado." });
-    }
-    return res.json({ mensagem: "Relatório removido com sucesso." });
+    const store = await readStore();
+    const relatorios = [...store.relatorios]
+      .sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em))
+      .map((relatorio) => ({
+        id: relatorio.id,
+        criado_em: relatorio.criado_em,
+        responsavel: relatorio.responsavel,
+        cargo: relatorio.cargo,
+        substituto: Boolean(relatorio.substituto),
+        data_inicio: relatorio.data_inicio,
+        data_fim: relatorio.data_fim,
+        total_tarefas: Array.isArray(relatorio.tarefas) ? relatorio.tarefas.length : 0,
+      }));
+
+    return res.json(relatorios);
   } catch (err) {
-    console.error("Erro ao remover relatório:", err.message);
-    return res.status(500).json({ erro: "Erro ao remover relatório." });
+    console.error("Erro ao listar relatorios:", err.message);
+    return res.status(500).json({ erro: "Erro ao buscar relatorios." });
   }
 });
 
-// -----------------------------------------------
-// Inicialização
-// -----------------------------------------------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+app.get("/relatorio/:id", autenticar, apenasCoordenador, async (req, res) => {
+  try {
+    const store = await readStore();
+    const relatorio = store.relatorios.find((item) => item.id === req.params.id);
+
+    if (!relatorio) {
+      return res.status(404).json({ erro: "Relatorio nao encontrado." });
+    }
+
+    const tarefas = Array.isArray(relatorio.tarefas) ? relatorio.tarefas : [];
+
+    return res.json({
+      id: relatorio.id,
+      criado_em: relatorio.criado_em,
+      responsavel: relatorio.responsavel,
+      cargo: relatorio.cargo,
+      substituto: Boolean(relatorio.substituto),
+      data_inicio: relatorio.data_inicio,
+      data_fim: relatorio.data_fim,
+      pontos_atencao: relatorio.pontos_atencao,
+      observacoes: relatorio.observacoes,
+      proximos_passos: relatorio.proximos_passos,
+      tarefasAndamento: tarefas.filter((tarefa) => tarefa.tipo === "andamento"),
+      tarefasPendentes: tarefas.filter((tarefa) => tarefa.tipo === "pendente"),
+    });
+  } catch (err) {
+    console.error("Erro ao buscar relatorio:", err.message);
+    return res.status(500).json({ erro: "Erro ao buscar relatorio." });
+  }
 });
+
+app.delete("/relatorio/:id", autenticar, apenasAdmin, async (req, res) => {
+  try {
+    let removido = false;
+
+    await mutateStore(async (store) => {
+      const quantidadeAntes = store.relatorios.length;
+      store.relatorios = store.relatorios.filter((item) => item.id !== req.params.id);
+      removido = store.relatorios.length !== quantidadeAntes;
+    });
+
+    if (!removido) {
+      return res.status(404).json({ erro: "Relatorio nao encontrado." });
+    }
+
+    return res.json({ mensagem: "Relatorio removido com sucesso." });
+  } catch (err) {
+    console.error("Erro ao remover relatorio:", err.message);
+    return res.status(500).json({ erro: "Erro ao remover relatorio." });
+  }
+});
+
+async function iniciarServidor() {
+  try {
+    const resultadoSeed = await seedUsuariosPadrao();
+    const PORT = process.env.PORT || 3000;
+
+    app.listen(PORT, () => {
+      console.log(`Armazenamento local inicializado em ${getStorePath()}`);
+      if (resultadoSeed.criados.length > 0) {
+        console.log(`Usuarios padrao criados: ${resultadoSeed.criados.join(", ")}`);
+      }
+      console.log(`Servidor rodando em http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    const motivo = err.code || err.message || String(err);
+    console.error(`Erro ao iniciar armazenamento local: ${motivo}`);
+    process.exit(1);
+  }
+}
+
+iniciarServidor();
