@@ -2,7 +2,9 @@
 //   Configuracao do frontend - config.js
 // =============================================
 
-window.APP_CONFIG = window.APP_CONFIG || {};
+window.APP_CONFIG = {
+  apiUrl: "https://relat-rio-ti.onrender.com"
+};
 
 (function initApiConfig() {
   const host = window.location.hostname;
