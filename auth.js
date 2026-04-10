@@ -3,7 +3,7 @@
 //   Incluir em index.html e historico.html
 // =============================================
 
-window.API_URL = window.API_URL || "http://localhost:3000";
+window.API_URL = window.API_URL || "";
 
 function getToken() {
   return localStorage.getItem("token");

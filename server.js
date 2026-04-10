@@ -25,6 +25,9 @@ const PUBLIC_DIR = __dirname;
 
 app.use(cors());
 app.use(express.json());
+app.get("/healthz", (req, res) => {
+  res.json({ ok: true });
+});
 app.get("/", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "login.html"));
 });

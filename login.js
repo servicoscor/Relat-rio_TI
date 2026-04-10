@@ -2,7 +2,7 @@
 //   Login - login.js
 // =============================================
 
-const API_URL = "http://localhost:3000";
+const API_URL = window.API_URL || "";
 
 const token = localStorage.getItem("token");
 if (token) {
@@ -14,15 +14,37 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Enter") entrar();
 });
 
+function setErro(message) {
+  const erro = document.getElementById("erro");
+  erro.textContent = message;
+  erro.style.display = "block";
+}
+
+function mensagemConexao() {
+  if (window.API_CONFIG_ERROR) {
+    return window.API_CONFIG_ERROR;
+  }
+
+  if (window.location.hostname.endsWith("github.io")) {
+    return "Este frontend esta no GitHub Pages. Publique o backend e configure a URL da API em config.js.";
+  }
+
+  return "Nao foi possivel conectar ao servidor.";
+}
+
 async function entrar() {
   const usuario = document.getElementById("usuario").value.trim();
   const senha = document.getElementById("senha").value;
   const erro = document.getElementById("erro");
   erro.style.display = "none";
 
+  if (!API_URL) {
+    setErro(mensagemConexao());
+    return;
+  }
+
   if (!usuario || !senha) {
-    erro.textContent = "Preencha usuario e senha.";
-    erro.style.display = "block";
+    setErro("Preencha usuario e senha.");
     return;
   }
 
@@ -36,8 +58,7 @@ async function entrar() {
     const data = await res.json();
 
     if (!res.ok) {
-      erro.textContent = data.erro || "Usuario ou senha incorretos.";
-      erro.style.display = "block";
+      setErro(data.erro || "Usuario ou senha incorretos.");
       document.querySelector(".card").style.animation = "shake 0.3s ease";
       setTimeout(() => {
         document.querySelector(".card").style.animation = "";
@@ -51,8 +72,7 @@ async function entrar() {
     localStorage.setItem("cargo", data.cargo || "");
 
     window.location.href = data.nivel === "coordenador" ? "historico.html" : "index.html";
-  } catch (err) {
-    erro.textContent = "Nao foi possivel conectar ao servidor.";
-    erro.style.display = "block";
+  } catch {
+    setErro(mensagemConexao());
   }
 }

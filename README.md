@@ -18,6 +18,20 @@ Servidor: `http://localhost:3000`
 
 Frontend: abra `login.html` no navegador ou use Live Server no VS Code.
 
+## Deploy simples no Render
+
+O projeto inclui `render.yaml` para publicar o backend como Web Service.
+
+Depois do deploy, edite `config.js` e defina:
+
+```js
+window.APP_CONFIG = {
+  apiUrl: "https://SEU-BACKEND.onrender.com"
+};
+```
+
+Observacao: no plano free do Render, o arquivo `data/store.json` fica em armazenamento efemero. Se o servico reiniciar ou for redeployado, os dados podem ser perdidos.
+
 ## Usuarios padrao
 
 - `admin` / `admin123`

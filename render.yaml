@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: relatorio-ti-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /opt/render/project/src/data
+      - key: JWT_SECRET
+        sync: false

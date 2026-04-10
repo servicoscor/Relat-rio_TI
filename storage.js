@@ -7,7 +7,10 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const { randomUUID } = require("crypto");
 
-const DATA_DIR = path.join(__dirname, "data");
+const configuredDataDir = process.env.DATA_DIR || "data";
+const DATA_DIR = path.isAbsolute(configuredDataDir)
+  ? configuredDataDir
+  : path.join(__dirname, configuredDataDir);
 const STORE_FILE = path.join(DATA_DIR, "store.json");
 
 const BASE_STORE = {
